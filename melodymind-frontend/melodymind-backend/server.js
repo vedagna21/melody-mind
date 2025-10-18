@@ -120,6 +120,7 @@ app.post("/api/upload", upload.array("songs"), async (req, res) => {
 
     const savedSongs = [];
     const pythonScriptPath = path.join(__dirname, "mood_genre_detect.py");
+    const pythonCommand = process.platform === "win32" ? "python" : "python3";
 
     for (const file of files) {
       let mood = "Neutral";
@@ -127,26 +128,39 @@ app.post("/api/upload", upload.array("songs"), async (req, res) => {
       let tempo = 0;
 
       try {
-        const pythonCommand = process.platform === "win32" ? "python" : "python3";
         const pyResult = spawnSync(pythonCommand, [pythonScriptPath, file.path], {
           encoding: "utf-8",
+          stdio: "pipe"
         });
 
-        if (pyResult.stdout) {
-          const output = pyResult.stdout.trim();
-          if (output) {
-            const parsed = JSON.parse(output);
+        // Log Python errors
+        if (pyResult.error) {
+          console.error("SpawnSync error:", pyResult.error);
+        }
+
+        if (pyResult.stderr && pyResult.stderr.trim()) {
+          console.error("Python stderr:", pyResult.stderr.trim());
+        }
+
+        if (pyResult.stdout && pyResult.stdout.trim()) {
+          try {
+            const parsed = JSON.parse(pyResult.stdout.trim());
             mood = parsed.mood || "Neutral";
             genre = parsed.genre || "Unknown";
             tempo = parsed.tempo || 0;
-          }
-        }
 
-        if (pyResult.stderr) console.error("Python stderr:", pyResult.stderr);
+            if (parsed.error) console.warn("Python script returned error:", parsed.error);
+          } catch (e) {
+            console.error("JSON parse error:", e, "Raw output:", pyResult.stdout);
+          }
+        } else {
+          console.warn("Python stdout empty for file:", file.originalname);
+        }
       } catch (e) {
         console.error("Python detection error:", e);
       }
 
+      // Save song to MongoDB
       const song = new Song({
         songId: `local-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
         title: file.originalname.replace(/\.[^/.]+$/, ""),

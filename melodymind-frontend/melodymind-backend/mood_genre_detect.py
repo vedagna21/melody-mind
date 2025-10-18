@@ -101,7 +101,8 @@ def analyze_song(file_path):
         print(json.dumps(result))
 
     except Exception as e:
-        print(json.dumps({"mood": "Neutral", "genre": "Unknown", "tempo": 0}))
+        print(json.dumps({"mood": "Neutral", "genre": "Unknown", "tempo": 0, "error": str(e)}))
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
