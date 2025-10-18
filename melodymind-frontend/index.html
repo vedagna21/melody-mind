@@ -1,0 +1,207 @@
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MelodyMind</title>
+    <style>
+      /* Base */
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body, #root { height: 100%; font-family: 'Segoe UI', Roboto, Arial, sans-serif; background: #ffffff; color: #111827; }
+
+      /* Auth layout */
+      .auth-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+      .auth-card { width: 100%; max-width: 520px; background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid rgba(16,24,40,0.08); box-shadow: 0 8px 24px rgba(16,24,40,0.08); }
+      .small { color: #667085; margin-bottom: 10px; }
+
+      .auth-form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+      .auth-form label { font-size: 13px; color: #667085; }
+      .auth-form input { padding: 10px 12px; background: #ffffff; border: 1px solid rgba(16,24,40,0.12); color: #111827; border-radius: 8px; }
+      .form-error { background: rgba(255,50,50,0.06); color: #b42318; padding: 8px; border-radius: 8px; }
+
+      /* Buttons */
+      .btn { background: #1db954; border: 0; color: #041217; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; }
+      .btn.ghost { background: transparent; color: #667085; border: 1px solid rgba(16,24,40,0.12); padding: 8px 12px; border-radius: 8px; }
+
+      /* App layout */
+      .app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+      .navbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: linear-gradient(90deg, #1db954, #0aa66a); color: #041217; }
+      .brand { font-weight: 800; color: #041217; }
+
+      .app-body { display: flex; flex: 1; }
+      .sidebar { width: 220px; background: #ffffff; padding: 16px; border-right: 1px solid rgba(16,24,40,0.08); }
+      .app-main { flex: 1; padding: 20px; overflow-y: auto; background: transparent; }
+      .card { background: #ffffff; border-radius: 10px; padding: 14px; margin-bottom: 12px; border: 1px solid rgba(16,24,40,0.08); box-shadow: 0 8px 24px rgba(16,24,40,0.06); }
+
+      /* Player Bar (Updated for Spotify-like design with image fix) */
+      .playerbar {
+        background: #ffffff;
+        padding: 12px 18px;
+        border-top: 1px solid rgba(16,24,40,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        box-shadow: 0 -2px 10px rgba(16,24,40,0.08);
+      }
+
+      .playerbar-image-container {
+        flex: 0 0 200px;
+        text-align: center;
+        background: #f2f4f7; /* Light fallback background */
+      }
+
+      .playerbar-image {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 4px;
+        display: block; /* Ensure image is treated as a block element */
+      }
+      .playerbar-info {
+        flex: 1;
+        padding: 0 20px;
+        text-align: center;
+        min-width: 0; /* Prevent overflow */
+      }
+      .playerbar-info h4 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #0f172a;
+        white-space: nowrap; /* Prevent text wrapping */
+        overflow: hidden;
+        text-overflow: ellipsis; /* Add ellipsis for long titles */
+      }
+
+  </body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MelodyMind</title>
+    <style>
+      /* Base */
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body, #root { height: 100%; font-family: 'Segoe UI', Roboto, Arial, sans-serif; background: #ffffff; color: #111827; }
+
+      /* Auth layout */
+      .auth-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+      .auth-card { width: 100%; max-width: 520px; background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid rgba(16,24,40,0.08); box-shadow: 0 8px 24px rgba(16,24,40,0.08); }
+      .small { color: #667085; margin-bottom: 10px; }
+      .auth-form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+      .auth-form label { font-size: 13px; color: #667085; }
+      .auth-form input { padding: 10px 12px; background: #ffffff; border: 1px solid rgba(16,24,40,0.12); color: #111827; border-radius: 8px; }
+      .form-error { background: rgba(255,50,50,0.06); color: #b42318; padding: 8px; border-radius: 8px; }
+
+      /* Buttons */
+      .btn { background: #1db954; border: 0; color: #041217; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; }
+      .btn.ghost { background: transparent; color: #9fbfaf; border: 1px solid rgba(255,255,255,0.04); padding: 8px 12px; border-radius: 8px; }
+
+      /* App layout */
+      .app-shell { display: flex; flex-direction: column; height: 100vh; }
+      .navbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: linear-gradient(90deg, #1db954, #0aa66a); color: #041217; }
+      .brand { font-weight: 800; color: #041217; }
+      .app-body { display: flex; flex: 1; overflow: hidden; }
+      .sidebar { width: 220px; background: #ffffff; padding: 16px; border-right: 1px solid rgba(16,24,40,0.08); }
+      .app-main { flex: 1; padding: 20px; overflow-y: auto; background: transparent; }
+      .card { background: #ffffff; border-radius: 10px; padding: 14px; margin-bottom: 12px; border: 1px solid rgba(16,24,40,0.08); box-shadow: 0 8px 24px rgba(16,24,40,0.06); }
+      
+      /* Player Bar (Updated for vertical stack: image, info, controls) */
+      .playerbar {
+        background: #ffffff;
+        padding: 12px 18px;
+        border-top: 1px solid rgba(16,24,40,0.08);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        box-shadow: 0 -2px 10px rgba(16,24,40,0.08);
+      }
+      .playerbar-image-container {
+        flex: 0 0 200px;
+        text-align: center;
+        background: #f2f4f7; /* Light fallback background */
+      }
+      .playerbar-image {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 4px;
+        display: block;
+      }
+      .playerbar-info {
+        text-align: center;
+        min-width: 0;
+      }
+      .playerbar-info h4 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #0f172a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .playerbar-info p {
+        margin: 0;
+        font-size: 1rem;
+        color: #667085;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .playerbar-controls {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+      }
+      .playerbar-btn {
+        background: none;
+        border: none;
+        color: #0f172a;
+        font-size: 2rem;
+        cursor: pointer;
+        padding: 10px;
+        transition: color 0.2s;
+      }
+      .playerbar-btn:hover { color: #1db954; }
+
+      /* Home layout */
+      .home-root { display: flex; flex-direction: column; gap: 18px; }
+      .home-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 12px 6px; }
+      .home-title h1 { font-size: 26px; margin-bottom: 6px; color: #0f172a; }
+      .home-title .muted { color: #667085; }
+      .home-actions { display: grid; grid-template-columns: repeat(2, minmax(160px, 1fr)); gap: 10px; align-items: start; }
+      .action-white { background: #fff; color: #02130e; border: none; padding: 12px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 18px rgba(4,32,22,0.08); transition: transform .12s ease, box-shadow .12s ease; }
+      .action-white:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(4,32,22,0.16); }
+      @media (max-width: 720px) { .home-actions { grid-template-columns: 1fr; width: 100%; } }
+      .home-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 0 6px; }
+      @media (max-width: 900px) { .home-grid { grid-template-columns: 1fr; } }
+      .card h3 { margin-bottom: 8px; color: #0f172a; }
+      .card p { color: #344054; }
+
+      /* Sidebar styles */
+      .sidebar { width: 220px; background: #ffffff; color: #0f172a; padding: 20px; height: 100vh; display: flex; flex-direction: column; }
+      .sidebar-title { margin-bottom: 20px; font-size: 20px; font-weight: bold; }
+      .sidebar-menu { list-style: none; padding: 0; }
+      .sidebar-menu li { margin: 15px 0; }
+      .sidebar-menu a { text-decoration: none; color: #344054; font-size: 16px; display: flex; align-items: center; transition: 0.2s; }
+      .sidebar-menu a:hover { color: #1db954; font-weight: bold; }
+      .icon { margin-right: 10px; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
