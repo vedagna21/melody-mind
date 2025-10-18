@@ -120,7 +120,7 @@ app.post("/api/upload", upload.array("songs"), async (req, res) => {
 
     const savedSongs = [];
     const pythonScriptPath = path.join(__dirname, "mood_genre_detect.py");
-    const pythonCommand = process.platform === "win32" ? "python" : "python3";
+    const pythonCommand = "python3";
 
     for (const file of files) {
       let mood = "Neutral";
