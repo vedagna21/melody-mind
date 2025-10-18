@@ -1,8 +1,4 @@
-numpy
-librosa
-scipy
-pydub
-sys
-json
-
-warnings
+numpy==1.25.2
+librosa==0.11.1
+scipy==1.11.1
+pydub==0.25.1
