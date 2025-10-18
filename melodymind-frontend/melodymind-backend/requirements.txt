@@ -1,6 +1,5 @@
-# Python dependencies
 flask
-numpy==1.24.6
+numpy==1.26.4
 scipy
 pandas
 python-dotenv

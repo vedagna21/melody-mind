@@ -1,17 +1,13 @@
-# render.yaml - Node + Python backend
-
 services:
   - type: web
     name: melodymind-backend
     env: python
-    pythonVersion: "3.12"
+    pythonVersion: "3.13"
     buildCommand: |
       pip install --upgrade pip setuptools wheel
       pip install -r requirements.txt
       npm install
-    startCommand: |
-      node server.js
+    startCommand: node server.js
     envVars:
       - key: MONGO_URI
-        fromDatabase: mongodb+srv://user1:12345@cluster0.0oumenh.mongodb.net/melody-mind?retryWrites=true&w=majority&appName=Cluster0
-    plan: free
+        sync: false
