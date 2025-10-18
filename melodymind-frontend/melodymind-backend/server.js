@@ -337,12 +337,23 @@ app.get("/api/genre-trends/:userId", async (req, res) => {
 /* =======================
    SERVE REACT FRONTEND
 ======================= */
+/* =======================
+   SERVE REACT FRONTEND
+======================= */
 const frontendPath = path.join(__dirname, "../melodymind-frontend/dist");
-app.use(express.static(frontendPath));
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
-});
+// Only serve frontend if build exists
+if (fs.existsSync(frontendPath)) {
+  app.use(express.static(frontendPath));
+
+  // Catch-all to serve index.html for SPA routes (except /api)
+  app.get(/^\/(?!api).*/, (req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
+  });
+} else {
+  console.warn("⚠️ Frontend dist folder not found. Skipping frontend serving.");
+}
+
 
 /* =======================
    SERVER START
