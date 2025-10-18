@@ -1,9 +1,8 @@
-# Ensure setuptools and wheel are available for builds
-setuptools>=67.8.0
-wheel>=0.40.0
-
-# Core packages
-numpy==1.25.2
-librosa==0.11.0
-scipy==1.10.1
-pydub==0.25.1
+# Python dependencies
+flask
+numpy==1.24.6
+scipy
+pandas
+python-dotenv
+librosa
+soundfile
