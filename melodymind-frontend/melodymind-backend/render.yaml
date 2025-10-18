@@ -3,6 +3,12 @@ services:
     name: melodymind-backend
     env: python
     plan: free
-    pythonVersion: 3.11
-    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt && npm install
+    buildCommand: >
+      npm install &&
+      pip install --upgrade pip setuptools wheel &&
+      pip install -r requirements.txt
     startCommand: node server.js
+    envVars:
+      - key: MONGO_URI
+        value: "mongodb+srv://user1:12345@cluster0.0oumenh.mongodb.net/melody-mind?retryWrites=true&w=majority&appName=Cluster0"
+    pythonVersion: "3.11"
