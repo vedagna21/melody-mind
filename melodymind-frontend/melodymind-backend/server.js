@@ -11,7 +11,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({ origin: "*" })); // Allow all origins in production
+app.use(cors({ origin: "*" })); // Allow all origins
 app.use(express.json());
 
 // MongoDB Connection
@@ -45,6 +45,7 @@ const userHistorySchema = new mongoose.Schema({
   title: String,
   mood: String,
   genre: String,
+  playCount: { type: Number, default: 1 },
   timestamp: { type: Date, default: Date.now },
 });
 
@@ -66,7 +67,6 @@ app.use("/uploads", express.static(uploadFolder));
 /* =======================
    AUTH ENDPOINTS
 ======================= */
-// Signup
 app.post("/api/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -88,7 +88,6 @@ app.post("/api/signup", async (req, res) => {
   }
 });
 
-// Login
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -103,9 +102,7 @@ app.post("/api/login", async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Invalid email or password" });
 
-    res.status(200).json({
-      user: { id: user._id, name: user.name, email: user.email },
-    });
+    res.status(200).json({ user: { id: user._id, name: user.name, email: user.email } });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Server error" });
@@ -122,26 +119,30 @@ app.post("/api/upload", upload.array("songs"), async (req, res) => {
       return res.status(400).json({ message: "No files uploaded" });
 
     const savedSongs = [];
+    const pythonScriptPath = path.join(__dirname, "mood_genre_detect.py");
 
     for (const file of files) {
-      const filePath = file.path;
-      const pythonScriptPath = path.join(__dirname, "mood_genre_detect.py");
-
       let mood = "Neutral";
       let genre = "Unknown";
       let tempo = 0;
 
       try {
         const pythonCommand = process.platform === "win32" ? "python" : "python3";
-        const pyResult = spawnSync(pythonCommand, [pythonScriptPath, filePath]);
+        const pyResult = spawnSync(pythonCommand, [pythonScriptPath, file.path], {
+          encoding: "utf-8",
+        });
 
-        const output = pyResult.stdout.toString().trim();
-        if (output) {
-          const parsed = JSON.parse(output);
-          mood = parsed.mood || "Neutral";
-          genre = parsed.genre || "Unknown";
-          tempo = parsed.tempo || 0;
+        if (pyResult.stdout) {
+          const output = pyResult.stdout.trim();
+          if (output) {
+            const parsed = JSON.parse(output);
+            mood = parsed.mood || "Neutral";
+            genre = parsed.genre || "Unknown";
+            tempo = parsed.tempo || 0;
+          }
         }
+
+        if (pyResult.stderr) console.error("Python stderr:", pyResult.stderr);
       } catch (e) {
         console.error("Python detection error:", e);
       }
