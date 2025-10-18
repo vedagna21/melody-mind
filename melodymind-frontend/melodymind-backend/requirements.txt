@@ -1,0 +1,8 @@
+numpy
+librosa
+scipy
+pydub
+sys
+json
+
+warnings
