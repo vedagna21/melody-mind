@@ -4,8 +4,8 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs"); // Import full fs module for existsSync
-const fsPromises = require("fs").promises; // Rename to avoid conflict
+const fs = require("fs");
+const fsPromises = require("fs").promises;
 const { spawnSync } = require("child_process");
 
 const app = express();
@@ -19,6 +19,11 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Root Route
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "MelodyMind Backend API", version: "1.0.0" });
+});
 
 // MongoDB Connection
 require("dotenv").config();
