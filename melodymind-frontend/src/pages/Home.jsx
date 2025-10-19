@@ -272,14 +272,17 @@ export default function Home({ user }) {
 
   // ---------- Upload ----------
   const handleUpload = async (e) => {
-    const formData = new FormData();
-    for (let file of e.target.files) formData.append("songs", file);
+  const formData = new FormData();
+  for (let file of e.target.files) formData.append("songs", file);
 
-    try {
-      setUploading(true);
-      const res = await axios.post(`${API_BASE}/api/upload`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  formData.append("userId", user?.id); // ✅ add userId
+
+  try {
+    setUploading(true);
+    const res = await axios.post(`${API_BASE}/api/upload`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
 
       setSongs((prev) => [...res.data, ...prev]);
       setUploadedSongs((prev) => [...res.data, ...prev]);

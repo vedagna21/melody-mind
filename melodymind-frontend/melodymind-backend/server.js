@@ -12,12 +12,13 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({ 
+app.use("/api", cors({
   origin: ["http://localhost:5173", "https://melody-mind-delta.vercel.app"],
-  methods: ["GET", "POST", "DELETE"],
+  methods: ["GET", "POST", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "x-user-id"],
   credentials: true
 }));
+
 app.use(express.json());
 
 // Root Route
@@ -79,12 +80,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Serve uploads/ with explicit CORS
-app.use("/uploads", (req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "https://melody-mind-delta.vercel.app");
-  res.setHeader("Access-Control-Allow-Methods", "GET");
-  console.log(`Serving file: ${req.path}`); // Debug log
-  express.static(uploadFolder)(req, res, next);
-}, express.static(uploadFolder));
+app.use("/uploads", express.static(uploadFolder, {
+  setHeaders: (res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*"); // Allow all origins for file access
+  }
+}));
 
 /* =======================
    AUTH ENDPOINTS
@@ -400,12 +400,6 @@ app.listen(port, () =>
   console.log(`🚀 Server running on port ${port}`)
 );
 
-/* =======================
-   SERVER START
-======================= */
-app.listen(port, () =>
-  console.log(`🚀 Server running on port ${port}`)
-);
 // const express = require("express");
 // const mongoose = require("mongoose");
 // const bcrypt = require("bcrypt");
