@@ -80,7 +80,7 @@ const upload = multer({ storage });
 
 // Serve uploads/ with explicit CORS
 app.use("/uploads", (req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "https://melody-mind-wheat.vercel.app");
+  res.setHeader("Access-Control-Allow-Origin", "https://melody-mind-delta.vercel.app");
   res.setHeader("Access-Control-Allow-Methods", "GET");
   console.log(`Serving file: ${req.path}`); // Debug log
   express.static(uploadFolder)(req, res, next);
