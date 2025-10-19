@@ -70,7 +70,7 @@ import {
 
 const API_BASE = "https://melody-mind-5wqf.onrender.com";
 
-export default function Favorites({ currentUserId }) {
+export default function Favorites() {
   const [favorites, setFavorites] = useState([]);
   const [songs, setSongs] = useState([]);
   const [currentSongIndex, setCurrentSongIndex] = useState(null);
@@ -116,9 +116,9 @@ export default function Favorites({ currentUserId }) {
     };
   }, []);
 
-  // Filter favorites: only uploaded by current user & has a valid URL
+  // Filter favorites: only those in localStorage and with valid URL
   const favoriteSongs = songs.filter(
-    (s) => favorites.includes(s.songId) && s.uploadedBy === currentUserId && s.url
+    (s) => favorites.includes(s.songId) && s.url
   );
 
   // Play a selected song
@@ -170,7 +170,7 @@ export default function Favorites({ currentUserId }) {
     localStorage.setItem("favorites", JSON.stringify(updated));
     setFavorites(updated);
 
-    // Dispatch event for other components
+    // dispatch event for Home.jsx or other components to listen
     window.dispatchEvent(new Event("favoritesUpdated"));
   };
 
@@ -256,3 +256,4 @@ export default function Favorites({ currentUserId }) {
     </div>
   );
 }
+
