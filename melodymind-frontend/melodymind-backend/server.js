@@ -48,6 +48,7 @@ const songSchema = new mongoose.Schema({
   genre: String,
   url: String,
   tempo: Number,
+  uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // ✅ Add user association
 });
 
 const userHistorySchema = new mongoose.Schema({
@@ -136,6 +137,8 @@ app.post("/api/login", async (req, res) => {
 app.post("/api/upload", upload.array("songs"), async (req, res) => {
   try {
     const files = req.files;
+    const userId = req.body.userId; // ✅ require user ID from frontend
+    if (!userId) return res.status(400).json({ message: "User ID required" });
     if (!files || files.length === 0)
       return res.status(400).json({ message: "No files uploaded" });
 
@@ -154,22 +157,14 @@ app.post("/api/upload", upload.array("songs"), async (req, res) => {
           stdio: "pipe"
         });
 
-        // Log Python errors
-        if (pyResult.error) {
-          console.error("SpawnSync error:", pyResult.error);
-        }
-
-        if (pyResult.stderr && pyResult.stderr.trim()) {
-          console.error("Python stderr:", pyResult.stderr.trim());
-        }
-
+        if (pyResult.error) console.error("SpawnSync error:", pyResult.error);
+        if (pyResult.stderr && pyResult.stderr.trim()) console.error("Python stderr:", pyResult.stderr.trim());
         if (pyResult.stdout && pyResult.stdout.trim()) {
           try {
             const parsed = JSON.parse(pyResult.stdout.trim());
             mood = parsed.mood || "Neutral";
             genre = parsed.genre || "Unknown";
             tempo = parsed.tempo || 0;
-
             if (parsed.error) console.warn("Python script returned error:", parsed.error);
           } catch (e) {
             console.error("JSON parse error:", e, "Raw output:", pyResult.stdout);
@@ -181,7 +176,7 @@ app.post("/api/upload", upload.array("songs"), async (req, res) => {
         console.error("Python detection error:", e);
       }
 
-      // Save song to MongoDB
+      // Save song to MongoDB with uploadedBy
       const song = new Song({
         songId: `local-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
         title: file.originalname.replace(/\.[^/.]+$/, ""),
@@ -190,6 +185,7 @@ app.post("/api/upload", upload.array("songs"), async (req, res) => {
         genre,
         url: `/uploads/${file.filename}`,
         tempo,
+        uploadedBy: userId, // ✅ associate with user
       });
 
       await song.save();
@@ -208,7 +204,10 @@ app.post("/api/upload", upload.array("songs"), async (req, res) => {
 ======================= */
 app.get("/api/songs", async (req, res) => {
   try {
-    const songs = await Song.find({}).sort({ _id: -1 });
+    const userId = req.query.userId; // ✅ frontend must send ?userId=...
+    if (!userId) return res.status(400).json({ message: "User ID required" });
+
+    const songs = await Song.find({ uploadedBy: userId }).sort({ _id: -1 }); // ✅ only user's songs
     res.status(200).json(songs);
   } catch (err) {
     console.error("Get songs error:", err);
@@ -243,10 +242,13 @@ app.delete("/api/delete-song/:songId", async (req, res) => {
    FACE MOOD-BASED RECOMMENDATIONS
 ======================= */
 app.get("/api/recommend-face", async (req, res) => {
-  const { mood } = req.query;
+  const { mood, userId } = req.query; // ✅ optional filter by user
 
   try {
-    const allSongs = await Song.find({});
+    let allSongs = userId
+      ? await Song.find({ uploadedBy: userId }) // user-specific recommendations
+      : await Song.find({}); // fallback global
+
     if (!allSongs || allSongs.length === 0) return res.json([]);
 
     let filtered = allSongs.filter(
@@ -390,6 +392,13 @@ if (fs.existsSync(frontendPath)) {
 } else {
   console.warn("⚠️ Frontend dist folder not found. Skipping frontend serving.");
 }
+
+/* =======================
+   SERVER START
+======================= */
+app.listen(port, () =>
+  console.log(`🚀 Server running on port ${port}`)
+);
 
 /* =======================
    SERVER START
