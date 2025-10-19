@@ -4,7 +4,8 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs").promises; // Use promises for async folder creation
+const fs = require("fs"); // Import full fs module for existsSync
+const fsPromises = require("fs").promises; // Rename to avoid conflict
 const { spawnSync } = require("child_process");
 
 const app = express();
@@ -61,7 +62,7 @@ const UserHistory = mongoose.model("UserHistory", userHistorySchema);
 // Upload Setup
 const uploadFolder = path.join(__dirname, "uploads");
 // Create uploads/ folder at runtime
-fs.mkdir(uploadFolder, { recursive: true })
+fsPromises.mkdir(uploadFolder, { recursive: true })
   .then(() => console.log("✅ Uploads folder created"))
   .catch(err => console.error("❌ Failed to create uploads folder:", err));
 
@@ -219,8 +220,8 @@ app.delete("/api/delete-song/:songId", async (req, res) => {
     await Song.deleteOne({ songId });
 
     const filePath = path.join(__dirname, song.url);
-    if (await fs.exists(filePath)) {
-      await fs.unlink(filePath);
+    if (await fsPromises.exists(filePath)) {
+      await fsPromises.unlink(filePath);
       console.log(`Deleted file: ${filePath}`);
     } else {
       console.warn(`File not found: ${filePath}`);
@@ -377,7 +378,7 @@ const frontendPath = path.join(__dirname, "../melodymind-frontend/dist");
 if (fs.existsSync(frontendPath)) {
   app.use(express.static(frontendPath));
 
-  // Catch-all to serve index.html for SPA routes (except /api)
+  // Catch-all to serve index.html for SPA routes (except /api and /uploads)
   app.get(/^\/(?!api|uploads).*/, (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
   });
