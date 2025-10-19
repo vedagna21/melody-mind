@@ -18,33 +18,27 @@ import { useSong } from "../context/SongContext.jsx";
 
 export default function Home({ user }) {
   const nav = useNavigate();
-  const {
-    uploadedSongs,
-    setUploadedSongs,
-    setCurrentSong,
-    setCurrentMood,
-  } = useSong();
+  const { uploadedSongs, setUploadedSongs, setCurrentSong, setCurrentMood } = useSong();
 
   const [songs, setSongs] = useState([]);
   const [currentSongIndex, setCurrentSongIndex] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [listening, setListening] = useState(false);
-  const [favorites, setFavorites] = useState(
-    JSON.parse(localStorage.getItem("favorites") || "[]")
-  );
+  const [favorites, setFavorites] = useState(JSON.parse(localStorage.getItem("favorites") || "[]"));
   const [menuOpen, setMenuOpen] = useState(null);
   const [repeatMode, setRepeatMode] = useState("none");
   const [queue, setQueue] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [history, setHistory] = useState([]);
-  const audioRef = useRef(new Audio());
-  const recognitionRef = useRef(null);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [showUploadPopup, setShowUploadPopup] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
-  const API_BASE = "https://melody-mind-5wqf.onrender.com"; // ✅ Render backend
+  const audioRef = useRef(new Audio());
+  const recognitionRef = useRef(null);
+
+  const API_BASE = "https://melody-mind-5wqf.onrender.com";
 
   // ---------- Load Songs ----------
   useEffect(() => {
@@ -70,11 +64,8 @@ export default function Home({ user }) {
     };
 
     audio.addEventListener("timeupdate", updateProgress);
-
-    return () => {
-      audio.removeEventListener("timeupdate", updateProgress);
-    };
-  }, [audioRef]);
+    return () => audio.removeEventListener("timeupdate", updateProgress);
+  }, []);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -90,7 +81,7 @@ export default function Home({ user }) {
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
     };
-  }, [audioRef]);
+  }, []);
 
   // ---------- Play Song ----------
   const logAndPlaySong = async (index) => {
@@ -108,11 +99,15 @@ export default function Home({ user }) {
 
       // Log played song
       if (user?.id) {
-        const logRes = await axios.post(`${API_BASE}/api/log-song`, {
-          userId: user.id,
-          songId: song.songId,
-        });
-        if (logRes.data) setHistory((prev) => [song, ...prev]);
+        try {
+          const logRes = await axios.post(`${API_BASE}/api/log-song`, {
+            userId: user.id,
+            songId: song.songId,
+          });
+          if (logRes.data) setHistory((prev) => [song, ...prev]);
+        } catch (err) {
+          console.warn("Logging song failed:", err);
+        }
       }
     } catch (err) {
       console.error("Play song error:", err);
@@ -126,10 +121,7 @@ export default function Home({ user }) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch((err) => console.error("Play error:", err));
+      audioRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
     }
   };
 
@@ -145,17 +137,12 @@ export default function Home({ user }) {
       nextIndex = currentSongIndex + 1;
     } else if (repeatMode === "all") {
       nextIndex = 0;
-    } else {
-      alert("No next song available");
-      return;
-    }
+    } else return;
     logAndPlaySong(nextIndex);
   };
 
   const previousSong = () => {
-    if (currentSongIndex > 0) {
-      logAndPlaySong(currentSongIndex - 1);
-    } else alert("No previous song available");
+    if (currentSongIndex > 0) logAndPlaySong(currentSongIndex - 1);
   };
 
   // ---------- Remove Song ----------
@@ -179,9 +166,7 @@ export default function Home({ user }) {
   // ---------- Favorites / Queue / Shuffle ----------
   const toggleFavorite = (songId) => {
     setFavorites((prev) => {
-      const updated = prev.includes(songId)
-        ? prev.filter((id) => id !== songId)
-        : [...prev, songId];
+      const updated = prev.includes(songId) ? prev.filter((id) => id !== songId) : [...prev, songId];
       localStorage.setItem("favorites", JSON.stringify(updated));
       return updated;
     });
@@ -189,23 +174,19 @@ export default function Home({ user }) {
 
   const addToQueue = (songId) => {
     const index = songs.findIndex((song) => song.songId === songId);
-    if (index !== -1 && !queue.includes(index)) {
-      setQueue((prev) => [...prev, index]);
-    }
+    if (index !== -1 && !queue.includes(index)) setQueue((prev) => [...prev, index]);
   };
 
   const shuffleSongs = () => {
     const shuffled = [...Array(songs.length).keys()].sort(() => Math.random() - 0.5);
     setSongs((prev) => shuffled.map((i) => prev[i]));
     setUploadedSongs((prev) => shuffled.map((i) => prev[i]));
-    if (currentSongIndex !== null)
-      setCurrentSongIndex(shuffled.indexOf(currentSongIndex));
+    if (currentSongIndex !== null) setCurrentSongIndex(shuffled.indexOf(currentSongIndex));
   };
 
   // ---------- Voice Commands ----------
   const createRecognition = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return null;
 
     const recognition = new SpeechRecognition();
@@ -223,11 +204,7 @@ export default function Home({ user }) {
 
       if (raw.includes("next")) return nextSong();
       if (raw.includes("previous") || raw.includes("back")) return previousSong();
-      if (raw.includes("pause")) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-        return;
-      }
+      if (raw.includes("pause")) return audioRef.current.pause() && setIsPlaying(false);
       if (raw.includes("stop")) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -236,23 +213,13 @@ export default function Home({ user }) {
       }
       if (raw.includes("shuffle")) return shuffleSongs();
       if (raw.includes("logout")) return nav("/login");
-      if (raw.includes("upload")) {
-        document.getElementById("file-upload").click();
-        return;
-      }
+      if (raw.includes("upload")) return document.getElementById("file-upload").click();
 
       if (raw.startsWith("play")) {
         const query = raw.replace(/^play\s+/, "").trim();
-        if (!query) {
-          audioRef.current.play();
-          setIsPlaying(true);
-          return;
-        }
+        if (!query) return audioRef.current.play() && setIsPlaying(true);
         const words = query.split(/\s+/);
-        const idx = songs.findIndex((s) => {
-          const haystack = `${s.title} ${s.artist}`.toLowerCase();
-          return words.every((w) => haystack.includes(w));
-        });
+        const idx = songs.findIndex((s) => words.every((w) => `${s.title} ${s.artist}`.toLowerCase().includes(w)));
         if (idx !== -1) return logAndPlaySong(idx);
         alert(`❌ No results for "${query}"`);
       }
@@ -272,17 +239,14 @@ export default function Home({ user }) {
 
   // ---------- Upload ----------
   const handleUpload = async (e) => {
-  const formData = new FormData();
-  for (let file of e.target.files) formData.append("songs", file);
+    const formData = new FormData();
+    for (let file of e.target.files) formData.append("songs", file);
+    if (!user?.id) return alert("❌ You must be logged in to upload songs");
+    formData.append("userId", user.id);
 
-  formData.append("userId", user?.id); // ✅ add userId
-
-  try {
-    setUploading(true);
-    const res = await axios.post(`${API_BASE}/api/upload`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
+    try {
+      setUploading(true);
+      const res = await axios.post(`${API_BASE}/api/upload`, formData, { headers: { "Content-Type": "multipart/form-data" } });
 
       setSongs((prev) => [...res.data, ...prev]);
       setUploadedSongs((prev) => [...res.data, ...prev]);
