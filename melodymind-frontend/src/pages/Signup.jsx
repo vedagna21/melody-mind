@@ -58,7 +58,7 @@ export default function Signup({ onSignup }) {
     if (!name || !email || !password) return setErr('All fields required');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/signup', {
+      const response = await axios.post('https://melody-mind-5wqf.onrender.com/api/signup', {
         name,
         email,
         password,

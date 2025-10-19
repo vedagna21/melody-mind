@@ -77,7 +77,7 @@ export default function Playlist() {
                 <div>🎶 Genre: {song.genre}</div>
                 <audio
                   controls
-                  src={`http://localhost:5000${song.url}`}
+                  src={`https://melody-mind-5wqf.onrender.com${song.url}`}
                   style={{ width: "100%", marginTop: "4px" }}
                 />
                 {/* <button

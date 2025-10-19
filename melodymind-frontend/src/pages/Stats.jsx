@@ -17,7 +17,7 @@ export default function Stats({ user }) {
         console.log('🔍 Fetching stats for user:', userId);
 
         const recentResponse = await axios.get(
-          `http://localhost:5000/api/user-history/${userId}?limit=50&sort=-timestamp`
+          `https://melody-mind-5wqf.onrender.com/api/user-history/${userId}?limit=50&sort=-timestamp`
         );
         console.log('📊 Recent plays response:', recentResponse.data);
         setRecentPlays(recentResponse.data || []);

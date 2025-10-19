@@ -78,7 +78,7 @@ export default function Favorites() {
     setFavorites(savedFavs);
 
     axios
-      .get("http://localhost:5000/api/songs")
+      .get("https://melody-mind-5wqf.onrender.com/api/songs")
       .then((res) => setSongs(res.data))
       .catch((err) => console.error("Fetch songs error:", err));
   }, []);
@@ -122,7 +122,7 @@ export default function Favorites() {
       // Stop previous song
       audioRef.current.pause();
 
-      audioRef.current.src = `http://localhost:5000${song.url}`;
+      audioRef.current.src = `https://melody-mind-5wqf.onrender.com${song.url}`;
       await audioRef.current.play();
       setIsPlaying(true);
       setCurrentSongIndex(index);

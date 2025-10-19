@@ -54,7 +54,7 @@ export default function Login({ onLogin }) {
     if (!email || !password) return setErr('Enter email and password');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/login', {
+      const response = await axios.post('https://melody-mind-5wqf.onrender.com/api/login', {
         email,
         password,
       });
