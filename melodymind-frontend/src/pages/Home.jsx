@@ -182,18 +182,17 @@ export default function Home({ user }) {
 
   // ---------- Favorites / Queue / Shuffle ----------
   const toggleFavorite = (songId) => {
-  setFavorites((prev) => {
-    const updated = prev.includes(songId)
-      ? prev.filter((id) => id !== songId)
-      : [...prev, songId];
-    localStorage.setItem("favorites", JSON.stringify(updated));
+  const updated = favorites.includes(songId)
+    ? favorites.filter((id) => id !== songId)
+    : [...favorites, songId];
 
-    // ✅ Dispatch a custom event to notify other components
-    window.dispatchEvent(new Event("favoritesUpdated"));
+  localStorage.setItem("favorites", JSON.stringify(updated));
+  setFavorites(updated);
 
-    return updated;
-  });
+  // dispatch event for other components to listen
+  window.dispatchEvent(new Event("favoritesUpdated"));
 };
+
 
 
   const addToQueue = (songId) => {

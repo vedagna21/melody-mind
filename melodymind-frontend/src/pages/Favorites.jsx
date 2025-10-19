@@ -60,43 +60,46 @@
 // }
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { FaPlay, FaPause, FaStepBackward, FaStepForward, FaHeart, FaEllipsisH } from "react-icons/fa";
+import {
+  FaPlay,
+  FaPause,
+  FaStepBackward,
+  FaStepForward,
+  FaHeart,
+} from "react-icons/fa";
 
-export default function Favorites() {
+const API_BASE = "https://melody-mind-5wqf.onrender.com";
+
+export default function Favorites({ currentUserId }) {
   const [favorites, setFavorites] = useState([]);
   const [songs, setSongs] = useState([]);
   const [currentSongIndex, setCurrentSongIndex] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef(new Audio());
 
-  // Load favorites and all songs
+  // Load all songs and favorites
   useEffect(() => {
     const savedFavs = JSON.parse(localStorage.getItem("favorites")) || [];
     setFavorites(savedFavs);
 
     axios
-      .get("https://melody-mind-5wqf.onrender.com/api/songs")
-      .then((res) => setSongs(res.data))
+      .get(`${API_BASE}/api/songs`)
+      .then((res) => setSongs(res.data || []))
       .catch((err) => console.error("Fetch songs error:", err));
   }, []);
 
-  // Listen for localStorage updates
+  // Listen for favorites updates from Home.jsx
   useEffect(() => {
-  const handleFavoritesUpdate = () => {
-    const savedFavs = JSON.parse(localStorage.getItem("favorites")) || [];
-    setFavorites(savedFavs);
-  };
-
-  window.addEventListener("favoritesUpdated", handleFavoritesUpdate);
-
-  return () => {
-    window.removeEventListener("favoritesUpdated", handleFavoritesUpdate);
-  };
-}, []);
-
+    const handleFavoritesUpdate = () => {
+      const savedFavs = JSON.parse(localStorage.getItem("favorites")) || [];
+      setFavorites(savedFavs);
+    };
+    window.addEventListener("favoritesUpdated", handleFavoritesUpdate);
+    return () =>
+      window.removeEventListener("favoritesUpdated", handleFavoritesUpdate);
+  }, []);
 
   // Audio time updates
   useEffect(() => {
@@ -113,18 +116,21 @@ export default function Favorites() {
     };
   }, []);
 
-  const favoriteSongs = songs.filter((s) => favorites.includes(s.songId));
+  // Filter favorites: only uploaded by current user & has a valid URL
+  const favoriteSongs = songs.filter(
+    (s) => favorites.includes(s.songId) && s.uploadedBy === currentUserId && s.url
+  );
 
+  // Play a selected song
   const logAndPlaySong = async (index) => {
     try {
       const song = favoriteSongs[index];
-      if (!song?.url) return alert("No URL found for this song");
+      if (!song?.url) return alert("This song cannot be played");
 
-      // Stop previous song
       audioRef.current.pause();
-
-      audioRef.current.src = `https://melody-mind-5wqf.onrender.com${song.url}`;
+      audioRef.current.src = `${API_BASE}${song.url}`;
       await audioRef.current.play();
+
       setIsPlaying(true);
       setCurrentSongIndex(index);
     } catch (err) {
@@ -132,6 +138,7 @@ export default function Favorites() {
     }
   };
 
+  // Play/pause toggle
   const playPause = () => {
     if (!audioRef.current.src) return;
     if (isPlaying) {
@@ -145,50 +152,58 @@ export default function Favorites() {
     }
   };
 
+  // Next/Previous
   const nextSong = () => {
-    if (currentSongIndex < favoriteSongs.length - 1) {
+    if (currentSongIndex < favoriteSongs.length - 1)
       logAndPlaySong(currentSongIndex + 1);
-    } else {
-      alert("No next song available");
-    }
   };
-
   const previousSong = () => {
-    if (currentSongIndex > 0) {
-      logAndPlaySong(currentSongIndex - 1);
-    } else {
-      alert("No previous song available");
-    }
+    if (currentSongIndex > 0) logAndPlaySong(currentSongIndex - 1);
   };
 
+  // Toggle favorite
   const toggleFavorite = (songId) => {
-    setFavorites((prev) => {
-      const updated = prev.includes(songId)
-        ? prev.filter((id) => id !== songId)
-        : [...prev, songId];
-      localStorage.setItem("favorites", JSON.stringify(updated));
-      return updated;
-    });
+    const updated = favorites.includes(songId)
+      ? favorites.filter((id) => id !== songId)
+      : [...favorites, songId];
+
+    localStorage.setItem("favorites", JSON.stringify(updated));
+    setFavorites(updated);
+
+    // Dispatch event for other components
+    window.dispatchEvent(new Event("favoritesUpdated"));
   };
 
   return (
     <div className="favorites-content">
       <h2>❤ Your Favorites</h2>
+
       {favoriteSongs.length > 0 ? (
         <ul className="song-list">
           {favoriteSongs.map((song, index) => (
             <li key={song.songId} className="song-item">
-              <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "100%",
+                }}
+              >
                 <div>
                   <h4>{song.title}</h4>
-                  <p>{song.artist} | {song.genre} | Mood: {song.mood}</p>
+                  <p>
+                    {song.artist} | {song.genre} | Mood: {song.mood}
+                  </p>
                 </div>
                 <div style={{ display: "flex", gap: "10px" }}>
                   <button onClick={() => logAndPlaySong(index)}>
                     {isPlaying && currentSongIndex === index ? <FaPause /> : <FaPlay />}
                   </button>
                   <FaHeart
-                    style={{ cursor: "pointer", color: favorites.includes(song.songId) ? "red" : "gray" }}
+                    style={{
+                      cursor: "pointer",
+                      color: favorites.includes(song.songId) ? "red" : "gray",
+                    }}
                     onClick={() => toggleFavorite(song.songId)}
                   />
                 </div>
@@ -200,15 +215,14 @@ export default function Favorites() {
         <p>No favorite songs yet.</p>
       )}
 
-      {currentSongIndex !== null && (
+      {/* Player */}
+      {currentSongIndex !== null && favoriteSongs[currentSongIndex] && (
         <div className="playerbar">
-          {/* Song Info */}
           <div className="playerbar-info">
             <h4>{favoriteSongs[currentSongIndex].title}</h4>
             <p>{favoriteSongs[currentSongIndex].artist}</p>
           </div>
 
-          {/* Progress Bar */}
           <div className="progress-container">
             <div
               className="progress-fill"
@@ -226,11 +240,16 @@ export default function Favorites() {
             />
           </div>
 
-          {/* Controls */}
           <div className="playerbar-controls">
-            <button onClick={previousSong}><FaStepBackward /></button>
-            <button onClick={playPause}>{isPlaying ? <FaPause /> : <FaPlay />}</button>
-            <button onClick={nextSong}><FaStepForward /></button>
+            <button onClick={previousSong}>
+              <FaStepBackward />
+            </button>
+            <button onClick={playPause}>
+              {isPlaying ? <FaPause /> : <FaPlay />}
+            </button>
+            <button onClick={nextSong}>
+              <FaStepForward />
+            </button>
           </div>
         </div>
       )}
