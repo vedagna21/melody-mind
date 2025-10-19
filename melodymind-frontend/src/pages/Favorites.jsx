@@ -85,17 +85,18 @@ export default function Favorites() {
 
   // Listen for localStorage updates
   useEffect(() => {
-    const handleStorageChange = () => {
-      const savedFavs = JSON.parse(localStorage.getItem("favorites")) || [];
-      setFavorites(savedFavs);
-    };
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("localStorageUpdate", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("localStorageUpdate", handleStorageChange);
-    };
-  }, []);
+  const handleFavoritesUpdate = () => {
+    const savedFavs = JSON.parse(localStorage.getItem("favorites")) || [];
+    setFavorites(savedFavs);
+  };
+
+  window.addEventListener("favoritesUpdated", handleFavoritesUpdate);
+
+  return () => {
+    window.removeEventListener("favoritesUpdated", handleFavoritesUpdate);
+  };
+}, []);
+
 
   // Audio time updates
   useEffect(() => {
