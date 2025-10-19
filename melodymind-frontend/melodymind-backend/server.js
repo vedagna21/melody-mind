@@ -13,7 +13,7 @@ const port = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({ 
-  origin: ["http://localhost:5173", "https://melody-mind-wheat.vercel.app"],
+  origin: ["http://localhost:5173", "https://melody-mind-delta.vercel.app"],
   methods: ["GET", "POST", "DELETE"],
   allowedHeaders: ["Content-Type", "x-user-id"],
   credentials: true
