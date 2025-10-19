@@ -132,16 +132,22 @@ export default function MoodDetect() {
 
   // ------------------ Fetch Songs ------------------
   const fetchSongs = async (moods) => {
-    try {
-      const res = await axios.get(`${API_BASE}/api/recommend-face`, {
-        params: { mood: Array.isArray(moods) ? moods.join(",") : moods },
-      });
-      setRecommendedSongs(res.data || []);
-    } catch (err) {
-      console.error("Error fetching recommended songs:", err);
-      setRecommendedSongs([]);
-    }
-  };
+  try {
+    const res = await axios.get(`${API_BASE}/api/recommend-face`, {
+      params: { mood: Array.isArray(moods) ? moods.join(",") : moods },
+    });
+
+    // ✅ Only include songs uploaded by this user
+    const userSongs = uploadedSongs.filter((song) =>
+      res.data.some((rec) => rec.songId === song.songId)
+    );
+
+    setRecommendedSongs(userSongs || []);
+  } catch (err) {
+    console.error("Error fetching recommended songs:", err);
+    setRecommendedSongs([]);
+  }
+};
 
   return (
     <div className="mood-page">
