@@ -181,18 +181,7 @@ export default function Home({ user }) {
   };
 
   // ---------- Favorites / Queue / Shuffle ----------
-  const toggleFavorite = (songId) => {
-  const updated = favorites.includes(songId)
-    ? favorites.filter((id) => id !== songId)
-    : [...favorites, songId];
-
-  localStorage.setItem("favorites", JSON.stringify(updated));
-  setFavorites(updated);
-
-  // dispatch event for other components to listen
-  window.dispatchEvent(new Event("favoritesUpdated"));
-};
-
+  
 
 
   const addToQueue = (songId) => {
