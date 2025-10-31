@@ -81,10 +81,16 @@ const upload = multer({ storage });
 
 // Serve uploads/ with explicit CORS
 app.use("/uploads", express.static(uploadFolder, {
-  setHeaders: (res) => {
-    res.setHeader("Access-Control-Allow-Origin", "*"); // Allow all origins for file access
+  setHeaders: (res, path) => {
+    const ext = path.split('.').pop().toLowerCase();
+    if (ext === 'mp3' || ext === 'wav' || ext === 'm4a' || ext === 'ogg') {
+      res.setHeader("Content-Type", "audio/mpeg");                // ✅ Ensures correct MIME
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin"); // ✅ Allows cross-origin media play
+    }
+    res.setHeader("Access-Control-Allow-Origin", "*");             // ✅ CORS
   }
 }));
+
 
 /* =======================
    AUTH ENDPOINTS
